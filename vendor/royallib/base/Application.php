@@ -4,7 +4,6 @@
 namespace royal\base;
 
 
-use royal\base\console\Console;
 use royal\base\exceptions\BadRequestException;
 use royal\type\Str;
 
@@ -24,6 +23,7 @@ final class Application extends Object
 
     public static function run()
     {
+        self::$_baseAppPath = __DIR__ . '/../../../';
         if (isset($_SESSION)) {
             self::runBrowser();
         } else {
@@ -40,28 +40,21 @@ final class Application extends Object
     {
         //        ini_set('display_errors', 1);
         self::$request = new Request();
-        self::$_baseAppPath = __DIR__ . '/../../../';
         $app = new static();
         $app->_from       = '\controllers\\';
         $app->_url        = explode("?", $_SERVER['REQUEST_URI'])[0];
         $app->_controller = explode('/', $app->_url)[1] ?? '';
         $app->_action     = explode('/', $app->_url)[2] ?? '';
-//        try {
         $app->call();
-//        } catch (BadRequestException $exception) {
-//            Application::$request->redirect('/', 404);
-//        } catch (\Throwable $throwable) {
-//            throw $throwable;
-//        }
     }
 
     private static function runConsole()
     {
         $app  = new static();
         $argv = $_SERVER['argv'];
-        $app->_from = '\console\controllers\\';
         array_shift($argv);
         $toCall = explode('/', array_shift($argv));
+        $app->_from = '\console\controllers\\';
         $app->_controller = $toCall[0] ?? '';
         if (!$app->_controller) {
             self::startScreen();

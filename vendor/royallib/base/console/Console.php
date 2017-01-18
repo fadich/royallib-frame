@@ -9,7 +9,7 @@ class Console extends BaseConsole
 {
     protected $_params = [];
 
-    public function __construct($argv)
+    public function __construct($argv = [])
     {
         $this->_params = (new Matrix($argv))->multiImplode(" ")->explodeElements()->value;
     }
