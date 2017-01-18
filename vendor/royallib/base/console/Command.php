@@ -28,7 +28,7 @@ use royal\type\Matrix;
  *
  * @author Fadi Ahmad
  */
-abstract class Command extends Interact
+class Command extends Interact
 {
     protected $_output   = [];
     protected $_commands = [];

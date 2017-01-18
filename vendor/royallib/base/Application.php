@@ -18,6 +18,7 @@ final class Application extends Object
     private $_url;
     private $_controller;
     private $_action;
+    private $_from;
 
     private function __construct() {  }
 
@@ -41,9 +42,10 @@ final class Application extends Object
         self::$request = new Request();
         self::$_baseAppPath = __DIR__ . '/../../../';
         $app = new static();
-        $app->_url = explode("?", $_SERVER['REQUEST_URI'])[0];
+        $app->_from       = '\controllers\\';
+        $app->_url        = explode("?", $_SERVER['REQUEST_URI'])[0];
         $app->_controller = explode('/', $app->_url)[1] ?? '';
-        $app->_action   = explode('/', $app->_url)[2] ?? '';
+        $app->_action     = explode('/', $app->_url)[2] ?? '';
 //        try {
         $app->call();
 //        } catch (BadRequestException $exception) {
@@ -55,11 +57,23 @@ final class Application extends Object
 
     private static function runConsole()
     {
+        $app  = new static();
         $argv = $_SERVER['argv'];
+        $app->_from = '\console\controllers\\';
         array_shift($argv);
-        $controller = array_shift($argv);
-        $con = new Console($argv);
-        echo '<pre>'; var_dump($con); die;
+        $toCall = explode('/', array_shift($argv));
+        $app->_controller = $toCall[0] ?? '';
+        if (!$app->_controller) {
+            self::startScreen();
+            exit();
+        }
+        $app->_action = $toCall[1] ?? '';
+        $app->call();
+    }
+
+    private static function startScreen()
+    {
+        echo "Hello";
     }
 
     private function call()
@@ -68,14 +82,15 @@ final class Application extends Object
             try {
                 $controller = new $this->controllerClass;
             } catch (\Error $error) {
-                throw new BadRequestException("Unknown controller \"{$this->_controller}\"");
+                throw new BadRequestException("Unknown controller \"{$this->controllerClass}\"");
             }
             if ($this->_action) {
-                $scenario = "a{$this->_action}";
-                if (!method_exists($controller, $scenario)) {
-                    throw new BadRequestException("Unknown action \"{$this->_controller}/{$this->_action}\"");
+                $this->_action = ucfirst($this->_action); // For pretty view
+                $action = "a{$this->_action}";
+                if (!method_exists($controller, $action)) {
+                    throw new BadRequestException("Unknown method (action) \"{$this->controllerClass}::{$action}()\"");
                 }
-                return $controller->$scenario();
+                return $controller->$action();
             }
             return $controller->aIndex();
         }
@@ -85,6 +100,6 @@ final class Application extends Object
 
     protected function getControllerClass()
     {
-        return '\\' . APP_NAME . '\\controllers\\' . (new Str($this->_controller))->toClassName() . "Controller";
+        return '\\' . APP_NAME . $this->_from . (new Str($this->_controller))->toClassName() . "Controller";
     }
 }
