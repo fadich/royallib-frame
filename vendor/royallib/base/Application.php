@@ -4,6 +4,7 @@
 namespace royal\base;
 
 
+use royal\base\console\Console;
 use royal\base\exceptions\BadRequestException;
 use royal\type\Str;
 
@@ -22,7 +23,7 @@ final class Application extends Object
 
     public static function run()
     {
-        if (isset($_SERVER)) {
+        if (isset($_SESSION)) {
             self::runBrowser();
         } else {
             self::runConsole();
@@ -54,6 +55,11 @@ final class Application extends Object
 
     private static function runConsole()
     {
+        $argv = $_SERVER['argv'];
+        array_shift($argv);
+        $controller = array_shift($argv);
+        $con = new Console($argv);
+        echo '<pre>'; var_dump($con); die;
     }
 
     private function call()

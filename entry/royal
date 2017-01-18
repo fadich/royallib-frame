@@ -1,0 +1,8 @@
+<?php
+
+defined('APP_NAME') or define('APP_NAME', 'app');
+
+require_once __DIR__ . '/../vendor/royallib/autoloader.php';
+
+\royal\base\Application::run();
+

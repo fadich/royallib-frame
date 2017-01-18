@@ -62,7 +62,7 @@ class Mixed extends BaseType
      * @param string $separator  a symbol or string that is the separator between a keys and an elements;
      * @param bool   $convert    a value ($this->_value) can be convented to array;
      *
-     * @return $this
+     * @return static
      * @throws \TypeError
      */
     public function implodeElements($glue = "&", string $separator = "=", array $keys = [], bool $convert = false)
@@ -98,7 +98,7 @@ class Mixed extends BaseType
      * @param array  $keys
      * @param int    $format
      *
-     * @return $this
+     * @return static
      * @throws IncorrectParamsException
      */
     public function explodeElements(string $glue = "&", string $separator = "=", array $keys = [], int $format = self::FORMAT_ARRAY)
@@ -107,7 +107,7 @@ class Mixed extends BaseType
             throw new IncorrectParamsException("Incorrect result format");
         }
         if (!is_string($this->value)) {
-            throw new IncorrectParamsException('Value (Mixed::$value) should be a string$ ' . gettype($this->value) . ' given');
+            throw new IncorrectParamsException('Value (Mixed::$value) should be a string ' . gettype($this->value) . ' given');
         }
         $elems = explode($glue, $this->value);
         $res   = [];
@@ -125,6 +125,49 @@ class Mixed extends BaseType
         }
         $this->_value = $format === self::FORMAT_JSON ? json_encode($res) :
             ($format === self::FORMAT_OBJECT ? (object)$res : $res);
+        return $this;
+    }
+
+    /**
+     * Using implode() for an array and for every it's element, if there is array etc...
+     *
+     * For example (it will be easier to understand),
+     *
+     * ```php
+     *   $array  = [15, 6, 9, 100 => 78, "a" => 78, 666 => "qwerty"];
+     *   $result = (new Mixed($array))->multiImplode(" | ")->value;
+     *   var_export($result);
+     *   // Result will be a string such as: "15 | 6 | 9 | 78 | 78 | qwerty"
+     *   // In this case method works like the standard implode();
+     *
+     *   // But the method's beauty is as follows (in case of the array composed of arrays):
+     *   $array  = [
+     *                 15.15,
+     *                 [
+     *                     15 => [
+     *                         784,
+     *                         "qq" => 6,
+     *                         9 => "qwe",
+     *                         7 => 7.8,
+     *                     ],
+     *                 ],
+     *                 123,
+     *             ];
+     *   $result = (new Mixed($array))->multiImplode(" | ")->value;
+     *   var_export($result);
+     *   // Result will be a string such as: "15.15 | 784 | 6 | qwe | 7.8 | 123"
+     * ```
+     *
+     * @param string $glue      A symbol or a string, that will be placed between the imploded elements;
+     *
+     * @return static
+     */
+    public function multiImplode($glue = "")
+    {
+        foreach($this->value as $val) {
+            $_array[] = is_array($val) ? (new static($val))->multiImplode($glue) : $val;
+        }
+        $this->_value = implode($glue, $_array ?? []);
         return $this;
     }
 
