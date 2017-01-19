@@ -66,7 +66,8 @@ final class Application extends Object
 
     private static function startScreen()
     {
-        echo "Hello";
+        $res = 'Hello!';
+        print_r($res);
     }
 
     private function call()
