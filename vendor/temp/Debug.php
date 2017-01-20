@@ -228,7 +228,7 @@ class Debug extends \yii\debug\models\search\Debug
         return $this;
     }
 
-    public function usedMemory($format = self::FORMAT_BYTES)
+    public function totalMemoryUsed(int $format = self::FORMAT_BYTES)
     {
         return (float)memory_get_usage() / $format;
     }
